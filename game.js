@@ -95,7 +95,7 @@ GameGrid.prototype.placeStone = function(loc, player){
 
 GameGrid.prototype.checkPoints = function(location, player){
 
-	var stone= this.Grid[location.x/this.blockSize][location.y/this.blockSize];
+	var stone = this.Grid[location.x/this.blockSize][location.y/this.blockSize];
 	player.points = 0;
 	var locY = location.y/this.blockSize;
 	var locX = location.x/this.blockSize;
@@ -103,9 +103,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 
 
 
-	if (typeof this.Grid[locX][(locY - index)] === 'object' && ((locY - 1) !== 0)){									//North 5-in-a-row point check.				
+	if (((locY - 1) !== 0) && typeof this.Grid[locX][(locY - index)] === 'object'){									//North 5-in-a-row point check.				
 		for (index = 1; index < 6 ; index++){
-			if (typeof this.Grid[locX][(locY - index)] !== 'object' || (locY-index) === 0){
+			if ((locY-index) === 0){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[locX][(locY - index)] !== 'object'){
 				player.points = 0;
 				break;
 			}
@@ -117,9 +121,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-		if (typeof this.Grid[(locX + 1)][(locY - 1)] === 'object' && ((locY - 1) !== 0 || (locX + 1) !== 32)){			//NE 5-in-a-row point check.				
+		if (((locY - 1) !== 0 || (locX + 1) !== 32) && typeof this.Grid[(locX + 1)][(locY - 1)] === 'object'){			//NE 5-in-a-row point check.				
 		for (var index = 1; index < 6 ; index++){
-			if (typeof this.Grid[(locX + index)][(locY - index)] !== 'object' || (locY-index) < 1 || (locX+index) > 31) {
+			if ((locY-index) < 1 || (locX+index) > 31){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX + index)][(locY - index)] !== 'object') {
 				player.points = 0;
 				break;
 			}
@@ -131,9 +139,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-		if (typeof this.Grid[(locX + 1)][locY] === 'object' && ((locX + 1) !== 32)){								//SE 5-in-a-row point check.				
+		if (((locX + 1) !== 32) && typeof this.Grid[(locX + 1)][locY] === 'object'){								//SE 5-in-a-row point check.				
 			for (index = 1; index < 6 ; index++){
-				if (typeof this.Grid[(locX + index)][locY] !== 'object' || (locX + index) > 31){
+				if ((locX + index) > 31){
+					player.points = 0;
+					break;
+				}
+				else if (typeof this.Grid[(locX + index)][locY] !== 'object'){
 				player.points = 0;
 				break;
 			}
@@ -145,9 +157,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-			if (typeof this.Grid[locX][(locY + 1)] === 'object' && ((locY + 1) !== 48)){						//S 5-in-a-row point check.				
+			if (((locY + 1) !== 48) && typeof this.Grid[locX][(locY + 1)] === 'object'){						//S 5-in-a-row point check.				
 				for (index = 1; index < 6 ; index++){
-					if (typeof this.Grid[locX][(locY + index)] !== 'object' || (locY + index) > 47){
+					if ((locY + index) > 47){
+						player.points = 0;
+						break;
+					}
+					else if (typeof this.Grid[locX][(locY + index)] !== 'object'){
 					player.points = 0;
 					break;
 			}
@@ -159,9 +175,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-	if (typeof this.Grid[(locX - 1)][(locY + 1)] === 'object' && ((locY + 1) !== 48 || (locX - 1) !== 0)){			//SW 5-in-a-row point check.				
+	if (((locY + 1) !== 48 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY + 1)] === 'object'){			//SW 5-in-a-row point check.				
 		for (var index = 1; index < 6 ; index++){
-			if (typeof this.Grid[(locX - index)][(locY + index)] !== 'object' || (locY-index) > 47 || (locX-index) < 1) {
+			if ((locY-index) > 47 || (locX-index) < 1){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX - index)][(locY + index)] !== 'object') {
 				player.points = 0;
 				break;
 			}
@@ -173,9 +193,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-	if (typeof this.Grid[(locX - 1)][locY] === 'object' && (locX - 1) !== 0 ){			//W 5-in-a-row point check.				
+	if ((locX - 1) !== 0 && typeof this.Grid[(locX - 1)][locY] === 'object' ){			//W 5-in-a-row point check.				
 		for (var index = 1; index < 6 ; index++){
-			if (typeof this.Grid[(locX - index)][locY] !== 'object' || (locX-index) < 1) {
+			if ((locX-index) < 1){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX - index)][locY] !== 'object') {
 				player.points = 0;
 				break;
 			}
@@ -187,9 +211,13 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	} 
 
-	if (typeof this.Grid[(locX - 1)][(locY - 1)] === 'object' && ((locY - 1) !== 0 || (locX - 1) !== 0)){			//NW 5-in-a-row point check.				
+	if (((locY - 1) !== 0 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY - 1)] === 'object'){			//NW 5-in-a-row point check.				
 		for (var index = 1; index < 6 ; index++){
-			if (typeof this.Grid[(locX - index)][(locY - index)] !== 'object' || (locX-index) < 1 || (locY-index) < 1){
+			if ((locX-index) < 1 || (locY-index) < 1){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX - index)][(locY - index)] !== 'object'){
 				player.points = 0;
 				break;
 			}
@@ -252,81 +280,15 @@ canvas.onmousedown = function(event) {					// Event, on mouse click perform func
 	gameGrid.placeStone(loc,players[round]);
 };	
 
-/*
-canvas.onmousemove = function(event){
-	var x = event.pageX - canvas.offsetLeft;
-	var y = event.pageY - canvas.offsetTop;
-
-	x = x / 20;
-	y = y / 20;
-	//x = Math.round(x / 20) * 20; 				// rounds off to the closest 20.
-	//y = Math.round(y / 20) * 20;
-
-	console.log(x, y);
-
-
-}; */
-
-
 
 
 
 var	gameGrid = new GameGrid();
-console.log(typeof gameGrid.Grid[1][1]);
-if (typeof gameGrid.Grid[1][1] !== 'object') console.log("true");
-else console.log("false");
 main();
 
 };
 
-/*
-function checkPoints(player, loc){
 
-	function fiveInArow(){							// check if player has five in a row.
-		var i;
-		for (i = 0; i < player.stones.length; i++) {
-			if (player.stones[i].loc.x === (loc.x + 1) && player.stones[i].loc.x === (loc.y - 1)) {
-
-			} 	
-		}
-		
-
-
-	}
-
-	function captureTwo(){							// check if player has captured two from player/players and add to score.
-
-		for (var i = 0; i < numofPlayers; i++) {
-			if (player[i].stones[].loc)
-		}
-
-	}
-
-	function checkScore(){							// check players score, if capture = 5, player win.
-
-	}
-
-}; */
-
-
-
-
-/*
-	loc[0] = new Location(100,70); // set location in loc array.
-	loc[1] = new Location(110,60);
-	loc[2] = new Location(110,80);
-
-	players[0].addStone(loc[0]); // add stone loc from loc array -> to player object stones array 
-	players[1].addStone(loc[1]);
-	players[2].addStone(loc[2]);
-
-	console.log(players[0].stones);
-	console.log(players[1].stones); */
-//};
-
-
-
-//------------------------------------------------------------------------
 
 /*
 
@@ -347,36 +309,17 @@ canvas.addEventListener('mousemove', function(evt) {
 
 */
 
-
-
-
-
-
-
-
-
-
-
 /*
-canvas = document.getElementById("myCanvas");
-//var ctx = canvas.getContext("2d");
+canvas.onmousemove = function(event){
+	var x = event.pageX - canvas.offsetLeft;
+	var y = event.pageY - canvas.offsetTop;
 
-//canvas = $("#myCanvas");
-ctx = canvas[0].getContext("2d");
-  ctx.translate(0.5, 0.5); 			// The translate() method remaps the (0,0) position on the canvas.
-  drawGrid();
-*/
+	x = x / 20;
+	y = y / 20;
+	//x = Math.round(x / 20) * 20; 				// rounds off to the closest 20.
+	//y = Math.round(y / 20) * 20;
 
-
-
-
+	console.log(x, y);
 
 
-
-
-//drawStone(players[0].stones[0].loc, players[0].playerID); // draw stone from location to player 1.
-//drawStone(players[1].stones[0].loc, players[1].playerID);	// draw stone from location to player 2.
-//drawStone(players[2].stones[0].loc, players[2].playerID);
-
-//};
-
+}; */
