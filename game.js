@@ -101,9 +101,8 @@ GameGrid.prototype.checkPoints = function(location, player){
 	var locX = location.x/this.blockSize;
 	var index = 0;
 
-
-
-	if (((locY - 1) !== 0) && typeof this.Grid[locX][(locY - index)] === 'object'){									//North 5-in-a-row point check.				
+	//North 5-in-a-row point check.	
+	if (((locY - 1) !== 0) && typeof this.Grid[locX][(locY - 1)] === 'object'){			
 		for (index = 1; index < 6 ; index++){
 			if ((locY-index) === 0){
 				player.points = 0;
@@ -120,8 +119,8 @@ GameGrid.prototype.checkPoints = function(location, player){
 			console.log("Color: " + this.Grid[locX][(locY - index)].color + " Points: " + player.points);
 		}
 	} 
-
-		if (((locY - 1) !== 0 || (locX + 1) !== 32) && typeof this.Grid[(locX + 1)][(locY - 1)] === 'object'){			//NE 5-in-a-row point check.				
+		//NE 5-in-a-row point check.
+	if (((locY - 1) !== 0 || (locX + 1) !== 32) && typeof this.Grid[(locX + 1)][(locY - 1)] === 'object'){				
 		for (var index = 1; index < 6 ; index++){
 			if ((locY-index) < 1 || (locX+index) > 31){
 				player.points = 0;
@@ -138,44 +137,62 @@ GameGrid.prototype.checkPoints = function(location, player){
 			console.log("Color: " + this.Grid[(locX + index)][(locY - index)].color + " Points: " + player.points);
 		}
 	} 
-
-		if (((locX + 1) !== 32) && typeof this.Grid[(locX + 1)][locY] === 'object'){								//SE 5-in-a-row point check.				
-			for (index = 1; index < 6 ; index++){
-				if ((locX + index) > 31){
-					player.points = 0;
-					break;
-				}
-				else if (typeof this.Grid[(locX + index)][locY] !== 'object'){
+		//E 5-in-a-row point check.
+	if (((locX + 1) !== 32) && typeof this.Grid[(locX + 1)][locY] === 'object'){				
+		for (index = 1; index < 6 ; index++){
+			if ((locX + index) > 31){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX + index)][locY] !== 'object'){
 				player.points = 0;
 				break;
 			}
 			if (this.Grid[(locX + index)][locY].color === player.playerID) player.points++;
 			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
+				console.log(player.playerID + " Got 5 in a row!");
+			}
 			console.log("Color: " + this.Grid[(locX + index)][locY].color + " Points: " + player.points);
 		}
 	} 
-
-			if (((locY + 1) !== 48) && typeof this.Grid[locX][(locY + 1)] === 'object'){						//S 5-in-a-row point check.				
-				for (index = 1; index < 6 ; index++){
-					if ((locY + index) > 47){
-						player.points = 0;
-						break;
-					}
-					else if (typeof this.Grid[locX][(locY + index)] !== 'object'){
-					player.points = 0;
-					break;
+		//SE 5-in-a-row point check.
+	if (((locY + 1) !== 48 || (locX + 1) !== 32) && typeof this.Grid[(locX + 1)][(locY + 1)] === 'object'){				
+		for (var index = 1; index < 6 ; index++){
+			if ((locX+index) > 31 || (locY+index) > 47){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[(locX + index)][(locY + index)] !== 'object'){
+				player.points = 0;
+				break;
+			}
+			if (this.Grid[(locX + index)][(locY + index)].color === player.playerID) player.points++;
+			if (player.points >= 4){
+				console.log(player.playerID + " Got 5 in a row!");
+				}
+			console.log("Color: " + this.Grid[(locX + index)][(locY + index)].color + " Points: " + player.points);
+		}
+	}
+			//S 5-in-a-row point check.
+	if (((locY + 1) !== 48) && typeof this.Grid[locX][(locY + 1)] === 'object'){				
+		for (index = 1; index < 6 ; index++){
+			if ((locY + index) > 47){
+				player.points = 0;
+				break;
+			}
+			else if (typeof this.Grid[locX][(locY + index)] !== 'object'){
+				player.points = 0;
+				break;
 			}
 			if (this.Grid[locX][(locY + index)].color === player.playerID) player.points++;
 			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
+		 		console.log(player.playerID + " Got 5 in a row!");
+			}
 			console.log("Color: " + this.Grid[locX][(locY + index)].color + " Points: " + player.points);
 		}
 	} 
-
-	if (((locY + 1) !== 48 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY + 1)] === 'object'){			//SW 5-in-a-row point check.				
+	//SW 5-in-a-row point check.
+	if (((locY + 1) !== 48 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY + 1)] === 'object'){				
 		for (var index = 1; index < 6 ; index++){
 			if ((locY-index) > 47 || (locX-index) < 1){
 				player.points = 0;
@@ -192,8 +209,8 @@ GameGrid.prototype.checkPoints = function(location, player){
 			console.log("Color: " + this.Grid[(locX - index)][(locY + index)].color + " Points: " + player.points);
 		}
 	} 
-
-	if ((locX - 1) !== 0 && typeof this.Grid[(locX - 1)][locY] === 'object' ){			//W 5-in-a-row point check.				
+	//W 5-in-a-row point check.
+	if ((locX - 1) !== 0 && typeof this.Grid[(locX - 1)][locY] === 'object' ){							
 		for (var index = 1; index < 6 ; index++){
 			if ((locX-index) < 1){
 				player.points = 0;
@@ -210,8 +227,8 @@ GameGrid.prototype.checkPoints = function(location, player){
 			console.log("Color: " + this.Grid[(locX - index)][locY].color + " Points: " + player.points);
 		}
 	} 
-
-	if (((locY - 1) !== 0 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY - 1)] === 'object'){			//NW 5-in-a-row point check.				
+	//NW 5-in-a-row point check.
+	if (((locY - 1) !== 0 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY - 1)] === 'object'){				
 		for (var index = 1; index < 6 ; index++){
 			if ((locX-index) < 1 || (locY-index) < 1){
 				player.points = 0;
@@ -228,9 +245,6 @@ GameGrid.prototype.checkPoints = function(location, player){
 			console.log("Color: " + this.Grid[(locX - index)][(locY - index)].color + " Points: " + player.points);
 		}
 	} 
-	
-
-
 }; 
 
 Player = function(name, playerID, score) {
