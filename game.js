@@ -6,9 +6,9 @@ ctx.translate(0.5, 0.5); 			// The translate() method remaps the (0,0) position 
 
 //var ctx = canvas.getContext("2d");
 //canvas = $("#myCanvas");
-var numofPlayers = 1; //process.argv[2];
+var numofPlayers = 2; //process.argv[2];
 var round = 0;
-var namesofPlayers = ["dag1"] //, "dag2", "dag3", "dag4"];
+var namesofPlayers = ["dag1", "dag2"]//, "dag3", "dag4"];
 var players = new Array();
 var loc;
 var rowSizeX = 32;
@@ -116,7 +116,7 @@ GameGrid.prototype.checkPoints = function(location, player){
 		se: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY+1,locY+2,locY+3,locY+4,locY+5] }
 	 };
 
-	this.checkBlocks = function(dir, numBlocks, points){
+	this.checkFiveInArowDirs = function(dir, numBlocks, points){
 		for (index = 0; index <= numBlocks; index++){
 			if (dir.x[index] === 0 || dir.x[index] === rowSizeX || dir.y[index] === 0 || dir.y[index] === colSizeY) return points;
 			if (typeof this.Grid[dir.x[index]][dir.y[index]] === 'object' && this.Grid[dir.x[index]][dir.y[index]].color === player.playerID) points++;
@@ -124,24 +124,51 @@ GameGrid.prototype.checkPoints = function(location, player){
 		}
 	};
 
-	player.points = this.checkBlocks(dirList.n, 5, 0); 
+	this.checkCaptureTwoDirs = function(dir, numBlocks){
+		var color;
+		for (index = 0; index <= numBlocks; index++){
+			if (dir.x[index] === 0 || dir.x[index] === rowSizeX || dir.y[index] === 0 || dir.y[index] === colSizeY) return false;
+			if (typeof this.Grid[dir.x[index]][dir.y[index]] !== 'object') return false;
+		}
+
+		if (this.Grid[dir.x[0]][dir.y[0]].color === this.Grid[dir.x[1]][dir.y[1]].color && this.Grid[dir.x[2]][dir.y[2]].color === player.playerID){
+			return true;
+		}
+	};
+
+	function incPlayerScore(){
+		player.score++;
+		console.log(player.playerID + " Captured two pieces");
+	};
+
+
+	if (this.checkCaptureTwoDirs(dirList.n, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.s, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.e, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.w, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.ne, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.nw, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.se, 2)) incPlayerScore();
+	else if (this.checkCaptureTwoDirs(dirList.sw, 2)) incPlayerScore();
+
+	player.points = this.checkFiveInArowDirs(dirList.n, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkBlocks(dirList.s, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkFiveInArowDirs(dirList.s, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkBlocks(dirList.e, 5, 0); 
+	player.points = this.checkFiveInArowDirs(dirList.e, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkBlocks(dirList.w, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkFiveInArowDirs(dirList.w, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkBlocks(dirList.ne, 5, 0); 
+	player.points = this.checkFiveInArowDirs(dirList.ne, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkBlocks(dirList.sw, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkFiveInArowDirs(dirList.sw, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkBlocks(dirList.nw, 5, 0); 
+	player.points = this.checkFiveInArowDirs(dirList.nw, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkBlocks(dirList.se, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkFiveInArowDirs(dirList.se, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
 }; 
