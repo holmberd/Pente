@@ -105,112 +105,43 @@ GameGrid.prototype.checkPoints = function(location, player){
 	var locX = location.x/this.blockSize;
 	var index = 0;
 
-	/*
-	var Directions = {
-		N: { x: locX, y: [locY-1,locY-2,locY-3,locY-4,locY-5] }
-	}; */
+	var dirList = {
+		n: { x: [locX,locX,locX,locX,locX], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+		s: { x: [locX,locX,locX,locX,locX], y: [locY+1,locY+2,locY+3,locY+4,locY+5] },
+		e: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY,locY,locY,locY,locY] },
+		w: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY,locY,locY,locY,locY] },
+		ne: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+		sw: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY+1,locY+2,locY+3,locY+4,locY+5] },
+		nw: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+		se: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY+1,locY+2,locY+3,locY+4,locY+5] }
+	 };
 
-	this.checkNorthFive = function(location, player){
-
-		var points = 0;
-
-		for ( index = 1; index <= 5; index++){
-			if ((locY - index) === 0) return points;
-			else if (typeof this.Grid[locX][(locY - index)] === 'object' && this.Grid[locX][(locY - index)].color === player.playerID) points++;
+	this.checkBlocks = function(dir, numBlocks, points){
+		for (index = 0; index <= numBlocks; index++){
+			if (dir.x[index] === 0 || dir.x[index] === rowSizeX || dir.y[index] === 0 || dir.y[index] === colSizeY) return points;
+			if (typeof this.Grid[dir.x[index]][dir.y[index]] === 'object' && this.Grid[dir.x[index]][dir.y[index]].color === player.playerID) points++;
 			else return points;
 		}
 	};
 
-	this.checkSouthFive = function(location, player, points){
-
-		for ( index = 1; index <= 5; index++){
-			if (locY + index === colSizeY) return points;
-			if (typeof this.Grid[locX][(locY + index)] === 'object' && this.Grid[locX][(locY + index)].color === player.playerID){
-				points++;
-			}
-			else return points;
-		}
-	};
-
-	this.checkEastFive = function(location, player){
-
-		var points = 0;
-
-		for ( index = 1; index <= 5; index++){
-			if (locX + index === rowSizeX) return points;
-			if (typeof this.Grid[(locX + index)][locY] === 'object' && this.Grid[(locX + index)][locY].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-	this.checkWestFive = function(location, player, points){
-
-		for ( index = 1; index <= 5; index++){
-			if (locX - index === 0) return points;
-			if (typeof this.Grid[(locX - index)][locY] === 'object' && this.Grid[(locX-index)][locY].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-	this.checkNEFive = function(location, player){
-
-		var points = 0;
-
-		for ( index = 1; index <= 5; index++){
-			if (locX + index === rowSizeX || locY - index === 0) return points;
-			if (typeof this.Grid[(locX + index)][(locY - index)] === 'object' && this.Grid[(locX + index)][(locY - index)].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-	this.checkSWFive = function(location, player, points){
-
-		for ( index = 1; index <= 5; index++){
-			if (locX - index === 0 || locY + index === colSizeY) return points;
-			if (typeof this.Grid[(locX - index)][(locY + index)] === 'object' && this.Grid[(locX - index)][(locY + index)].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-	this.checkNWFive = function(location, player){
-
-		var points = 0;
-
-		for ( index = 1; index <= 5; index++){
-			if (locX - index === 0 || locY - index === 0) return points;
-			if (typeof this.Grid[(locX - index)][(locY - index)] === 'object' && this.Grid[(locX - index)][(locY - index)].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-	this.checkSEFive = function(location, player, points){
-
-		for ( index = 1; index <= 5; index++){
-			if ( locX + index === rowSizeX || locY + index === colSizeY) return points;
-			if (typeof this.Grid[(locX + index)][(locY + index)] === 'object' && this.Grid[(locX + index)][(locY + index)].color === player.playerID) points++;
-			else return points;
-		}
-	};
-
-
-	player.points = this.checkNorthFive(location, player); 
+	player.points = this.checkBlocks(dirList.n, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkSouthFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkBlocks(dirList.s, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkEastFive(location, player);
+	player.points = this.checkBlocks(dirList.e, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkWestFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkBlocks(dirList.w, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkNEFive(location, player);
+	player.points = this.checkBlocks(dirList.ne, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkSWFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkBlocks(dirList.sw, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
-	player.points = this.checkNWFive(location, player);
+	player.points = this.checkBlocks(dirList.nw, 5, 0); 
 	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
-	else if (this.checkSEFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkBlocks(dirList.se, 5, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
 	else player.points = 0;
 
 }; 
