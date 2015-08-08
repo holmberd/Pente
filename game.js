@@ -6,9 +6,9 @@ ctx.translate(0.5, 0.5); 			// The translate() method remaps the (0,0) position 
 
 //var ctx = canvas.getContext("2d");
 //canvas = $("#myCanvas");
-var numofPlayers = 4; //process.argv[2];
+var numofPlayers = 1; //process.argv[2];
 var round = 0;
-var namesofPlayers = ["dag1", "dag2", "dag3", "dag4"];
+var namesofPlayers = ["dag1"] //, "dag2", "dag3", "dag4"];
 var players = new Array();
 var loc;
 var rowSizeX = 32;
@@ -105,154 +105,118 @@ GameGrid.prototype.checkPoints = function(location, player){
 	var locX = location.x/this.blockSize;
 	var index = 0;
 
-	//North 5-in-a-row point check.	
-	if (((locY - 1) !== 0) && typeof this.Grid[locX][(locY - 1)] === 'object'){			
-		for (index = 1; index < 6 ; index++){
-			if ((locY-index) === 0){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[locX][(locY - index)] !== 'object'){
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[locX][(locY - index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[locX][(locY - index)].color + " Points: " + player.points);
+	/*
+	var Directions = {
+		N: { x: locX, y: [locY-1,locY-2,locY-3,locY-4,locY-5] }
+	}; */
+
+	this.checkNorthFive = function(location, player){
+
+		var points = 0;
+
+		for ( index = 1; index <= 5; index++){
+			if ((locY - index) === 0) return points;
+			else if (typeof this.Grid[locX][(locY - index)] === 'object' && this.Grid[locX][(locY - index)].color === player.playerID) points++;
+			else return points;
 		}
-	} 
-		//NE 5-in-a-row point check.
-	if (((locY - 1) !== 0 || (locX + 1) !== rowSizeX) && typeof this.Grid[(locX + 1)][(locY - 1)] === 'object'){				
-		for (var index = 1; index < 6 ; index++){
-			if ((locY-index) < 1 || (locX+index) > (rowSizeX - 1)){
-				player.points = 0;
-				break;
+	};
+
+	this.checkSouthFive = function(location, player, points){
+
+		for ( index = 1; index <= 5; index++){
+			if (locY + index === colSizeY) return points;
+			if (typeof this.Grid[locX][(locY + index)] === 'object' && this.Grid[locX][(locY + index)].color === player.playerID){
+				points++;
 			}
-			else if (typeof this.Grid[(locX + index)][(locY - index)] !== 'object') {
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX + index)][(locY - index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[(locX + index)][(locY - index)].color + " Points: " + player.points);
+			else return points;
 		}
-	} 
-		//E 5-in-a-row point check.
-	if (((locX + 1) !== rowSizeX) && typeof this.Grid[(locX + 1)][locY] === 'object'){				
-		for (index = 1; index < 6 ; index++){
-			if ((locX + index) > (rowSizeX - 1)){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[(locX + index)][locY] !== 'object'){
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX + index)][locY].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				console.log(player.playerID + " Got 5 in a row!");
-			}
-			console.log("Color: " + this.Grid[(locX + index)][locY].color + " Points: " + player.points);
+	};
+
+	this.checkEastFive = function(location, player){
+
+		var points = 0;
+
+		for ( index = 1; index <= 5; index++){
+			if (locX + index === rowSizeX) return points;
+			if (typeof this.Grid[(locX + index)][locY] === 'object' && this.Grid[(locX + index)][locY].color === player.playerID) points++;
+			else return points;
 		}
-	} 
-		//SE 5-in-a-row point check.
-	if (((locY + 1) !== colSizeY || (locX + 1) !== rowSizeX) && typeof this.Grid[(locX + 1)][(locY + 1)] === 'object'){				
-		for (var index = 1; index < 6 ; index++){
-			if ((locX+index) > (rowSizeX - 1) || (locY+index) > (colSizeY - 1)){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[(locX + index)][(locY + index)] !== 'object'){
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX + index)][(locY + index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[(locX + index)][(locY + index)].color + " Points: " + player.points);
+	};
+
+	this.checkWestFive = function(location, player, points){
+
+		for ( index = 1; index <= 5; index++){
+			if (locX - index === 0) return points;
+			if (typeof this.Grid[(locX - index)][locY] === 'object' && this.Grid[(locX-index)][locY].color === player.playerID) points++;
+			else return points;
 		}
-	}
-			//S 5-in-a-row point check.
-	if (((locY + 1) !== colSizeY) && typeof this.Grid[locX][(locY + 1)] === 'object'){				
-		for (index = 1; index < 6 ; index++){
-			if ((locY + index) > (colSizeY - 1)){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[locX][(locY + index)] !== 'object'){
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[locX][(locY + index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-		 		console.log(player.playerID + " Got 5 in a row!");
-			}
-			console.log("Color: " + this.Grid[locX][(locY + index)].color + " Points: " + player.points);
+	};
+
+	this.checkNEFive = function(location, player){
+
+		var points = 0;
+
+		for ( index = 1; index <= 5; index++){
+			if (locX + index === rowSizeX || locY - index === 0) return points;
+			if (typeof this.Grid[(locX + index)][(locY - index)] === 'object' && this.Grid[(locX + index)][(locY - index)].color === player.playerID) points++;
+			else return points;
 		}
-	} 
-	//SW 5-in-a-row point check.
-	if (((locY + 1) !== colSizeY || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY + 1)] === 'object'){				
-		for (var index = 1; index < 6 ; index++){
-			if ((locY-index) > (colSizeY - 1) || (locX-index) < 1){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[(locX - index)][(locY + index)] !== 'object') {
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX - index)][(locY + index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[(locX - index)][(locY + index)].color + " Points: " + player.points);
+	};
+
+	this.checkSWFive = function(location, player, points){
+
+		for ( index = 1; index <= 5; index++){
+			if (locX - index === 0 || locY + index === colSizeY) return points;
+			if (typeof this.Grid[(locX - index)][(locY + index)] === 'object' && this.Grid[(locX - index)][(locY + index)].color === player.playerID) points++;
+			else return points;
 		}
-	} 
-	//W 5-in-a-row point check.
-	if ((locX - 1) !== 0 && typeof this.Grid[(locX - 1)][locY] === 'object' ){							
-		for (var index = 1; index < 6 ; index++){
-			if ((locX-index) < 1){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[(locX - index)][locY] !== 'object') {
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX - index)][locY].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[(locX - index)][locY].color + " Points: " + player.points);
+	};
+
+	this.checkNWFive = function(location, player){
+
+		var points = 0;
+
+		for ( index = 1; index <= 5; index++){
+			if (locX - index === 0 || locY - index === 0) return points;
+			if (typeof this.Grid[(locX - index)][(locY - index)] === 'object' && this.Grid[(locX - index)][(locY - index)].color === player.playerID) points++;
+			else return points;
 		}
-	} 
-	//NW 5-in-a-row point check.
-	if (((locY - 1) !== 0 || (locX - 1) !== 0) && typeof this.Grid[(locX - 1)][(locY - 1)] === 'object'){				
-		for (var index = 1; index < 6 ; index++){
-			if ((locX-index) < 1 || (locY-index) < 1){
-				player.points = 0;
-				break;
-			}
-			else if (typeof this.Grid[(locX - index)][(locY - index)] !== 'object'){
-				player.points = 0;
-				break;
-			}
-			if (this.Grid[(locX - index)][(locY - index)].color === player.playerID) player.points++;
-			if (player.points >= 4){
-				 console.log(player.playerID + " Got 5 in a row!");
-				}
-			console.log("Color: " + this.Grid[(locX - index)][(locY - index)].color + " Points: " + player.points);
+	};
+
+	this.checkSEFive = function(location, player, points){
+
+		for ( index = 1; index <= 5; index++){
+			if ( locX + index === rowSizeX || locY + index === colSizeY) return points;
+			if (typeof this.Grid[(locX + index)][(locY + index)] === 'object' && this.Grid[(locX + index)][(locY + index)].color === player.playerID) points++;
+			else return points;
 		}
-	} 
+	};
+
+
+	player.points = this.checkNorthFive(location, player); 
+	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkSouthFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else player.points = 0;
+
+	player.points = this.checkEastFive(location, player);
+	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkWestFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else player.points = 0;
+
+	player.points = this.checkNEFive(location, player);
+	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkSWFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else player.points = 0;
+
+	player.points = this.checkNWFive(location, player);
+	if (player.points >= 4) console.log(player.playerID + " Got 5 in a row!");
+	else if (this.checkSEFive(location, player, player.points) >=4) console.log(player.playerID + " Got 5 in a row!");
+	else player.points = 0;
+
 }; 
 
 Player = function(name, playerID, score) {
-	var colors = ["white", "black", "red", "blue", "green", "yellow"];
+	var colors = ["orange", "black", "red", "blue", "green", "yellow"];
 	this.playerID = colors[playerID];
 	this.name = name;
 	this.score = score;
