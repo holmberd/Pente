@@ -1,0 +1,566 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, 
+    user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+<style type="text/css">
+body { margin: 0; padding: 0; background: #000; }
+canvas { display: block; margin: 0 auto; position: absolute; }
+#canvasElements { position: relative;}
+#canvas { z-index: 0; top: 0; bottom: 0; left: 0; right: 0; background: #fff }
+#canvas2 { z-index: 1; top: 0; bottom: 0; left: 0; right: 0; }
+</style>
+
+</head>
+
+<body>
+
+<div id="canvasElements">
+<canvas id="canvas2">
+</canvas>
+<canvas id="canvas">
+This text is displayed if your browser does not support HTML5 Canvas.
+</canvas>
+</div>
+
+<script>
+
+
+PENTE = {
+
+	menu: true,
+	// set up some inital values
+    WIDTH: 540, 
+    HEIGHT: 600,
+    TOPOFFSET: 60, 
+    scale:  1,
+    // the position of the canvas
+    // in relation to the screen
+    offset: {top: 0, left: 0},
+    // we'll set the rest of these
+    // in the init function
+    RATIO:  null,
+    currentWidth:  null,
+    currentHeight:  null,
+    canvas: null,
+    ctx:  null,
+
+    players: [],
+    stones: [],
+    playerWon: false,
+    removedStones: [],
+	numofPlayers: 2,
+	round: 0,
+	namesofPlayers: ["Player-1", "Player-2", "Player-3", "Player-4", "Player-5", "Player-6"],
+	mouseLocation: null,
+	rowSizeX: 18,
+	colSizeY: 20,
+	gridSizeX: 540,
+	gridSizeY: 540,
+	blockSize: 30,
+
+
+	init: function(){
+		// the proportion of width to height
+        PENTE.RATIO = PENTE.WIDTH / PENTE.HEIGHT;
+        // these will change when the screen is resize
+        PENTE.currentWidth = PENTE.WIDTH;
+        PENTE.currentHeight = PENTE.HEIGHT;
+
+        // setting the canvas element
+        PENTE.canvas = document.getElementById("canvas");
+		//PENTE.canvas = document.getElementById("myCanvas");
+		PENTE.ctx = PENTE.canvas.getContext("2d");
+		// it's important to set this
+        // otherwise the browser will
+        // default to 320x200
+		PENTE.canvas.width = PENTE.WIDTH;
+        PENTE.canvas.height = PENTE.HEIGHT;
+		// The translate() method remaps the (0,0) position on the canvas.
+		PENTE.ctx.translate(0.5, 0.5);
+
+		//setting the top layer canvas, that we will draw the stones on.
+		PENTE.canvas2 = document.getElementById("canvas2");
+		//PENTE.canvas = document.getElementById("myCanvas");
+		PENTE.ctx2= PENTE.canvas2.getContext("2d");
+		// it's important to set this
+        // otherwise the browser will
+        // default to 320x200
+		PENTE.canvas2.width = PENTE.WIDTH;
+        PENTE.canvas2.height = PENTE.HEIGHT;
+		// The translate() method remaps the (0,0) position on the canvas.
+		PENTE.ctx2.translate(0.5, 0.5);
+	
+		//draw the game menu.
+		if (PENTE.menu){ 
+			PENTE.Draw.gameMenu();
+		}
+
+
+
+		for (var i = 0; i < PENTE.numofPlayers; i++) {
+			PENTE.players[i] = new PENTE.Player(PENTE.namesofPlayers[i], i, 0); // name, player, score;
+		}
+
+		for (i=0; i<PENTE.players.length; i++) {
+			console.log(PENTE.players[i]);
+		}
+
+		// listen for clicks
+        PENTE.canvas2.addEventListener('click', function(e) {
+            e.preventDefault();
+            PENTE.Input.set(e);
+        }, false);
+
+        // listen for touches
+        PENTE.canvas2.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            // the event object has an array
+            // called touches, we just want
+            // the first touch
+            PENTE.Input.set(e.touches[0]);
+        }, false);
+        PENTE.canvas2.addEventListener('touchmove', function(e) {
+            // we're not interested in this
+            // but prevent default behaviour
+            // so the screen doesn't scroll
+            // or zoom
+            e.preventDefault();
+        }, false);
+        PENTE.canvas2.addEventListener('touchend', function(e) {
+            // as above
+            e.preventDefault();
+        }, false);
+
+        PENTE.resize();
+
+	},
+	resize: function(){
+
+		PENTE.currentHeight = window.innerHeight;
+        // resize the width in proportion
+        // to the new height
+        PENTE.currentWidth = PENTE.currentHeight * PENTE.RATIO;
+
+        // this will create some extra space on the
+        // page, allowing us to scroll pass
+        // the address bar, and thus hide it.
+        /*
+        if (PENTE.android || PENTE.ios) {
+            document.body.style.height = (window.innerHeight + 50) + 'px';
+        } */
+
+        // set the new canvas style width & height
+        // note: our canvas is still 320x480 but
+        // we're essentially scaling it with CSS
+        PENTE.canvas.style.width = PENTE.currentWidth + 'px';
+        PENTE.canvas.style.height = PENTE.currentHeight + 'px';
+
+        PENTE.canvas2.style.width = PENTE.currentWidth + 'px';
+        PENTE.canvas2.style.height = PENTE.currentHeight + 'px';
+
+        // the amount by which the css resized canvas
+        // is different to the actual (480x320) size.
+        PENTE.scale = PENTE.currentWidth / PENTE.WIDTH;
+        // position of canvas in relation to
+        // the screen
+        PENTE.offset.top = PENTE.canvas.offsetTop;
+        PENTE.offset.left = PENTE.canvas.offsetLeft;
+
+        // we use a timeout here as some mobile
+        // browsers won't scroll if there is not
+        // a small delay
+        window.setTimeout(function() {
+                window.scrollTo(0,1);
+        }, 1);
+	},
+
+	render: function(stones, removeStones){
+		PENTE.ctx2.clearRect(0, PENTE.TOPOFFSET, PENTE.WIDTH, PENTE.HEIGHT-PENTE.TOPOFFSET);
+		for (var i = 0; i < PENTE.stones.length; i++){
+			if (PENTE.stones[i].visible) PENTE.Draw.drawStone(PENTE.stones[i]);
+		}
+	},
+	update: function(loc, player){
+		var stone = new PENTE.Stone(loc, player.playerID);
+		//adds stone to grid array.
+		PENTE.GameGrid.addStone(stone); // <--
+		PENTE.Draw.drawStone(stone);
+		PENTE.Points.checkPoints(loc, player);
+		// increase round.
+		PENTE.round++;										
+	},
+
+	main: function(){
+
+		PENTE.GameGrid.setGrid(PENTE.rowSizeX, PENTE.colSizeY);
+		PENTE.Draw.drawGrid(PENTE.WIDTH, PENTE.HEIGHT);
+		PENTE.Draw.scoreboard();
+	
+	}
+};
+
+PENTE.GameGrid = {
+
+		setGrid: function(rows, columns){
+			var i, j;
+			PENTE.Grid = new Array(rows);
+			for (i = 0; i < rows; i++) {
+				PENTE.Grid[i] = new Array(columns);
+			}
+			console.log(PENTE.Grid);
+		},
+		removeStone: function(stone){
+			PENTE.Grid[stone.loc.x/PENTE.blockSize][stone.loc.y/PENTE.blockSize] = undefined;
+		},
+		removeStones: function(stonesArray){
+			for (var i = 0; i < 2; i++)
+			{
+				PENTE.GameGrid.removeStone(stonesArray[i]);
+				for (var f = 0; f < PENTE.stones.length; f++){
+					if (stonesArray[i] === PENTE.stones[f]) PENTE.stones[f].visible = false;
+				}
+			}
+			PENTE.render();
+		},
+		addStone: function(stone) {
+			var locX = stone.loc.x/PENTE.blockSize,
+				locY = stone.loc.y/PENTE.blockSize;
+
+			PENTE.Grid[locX][locY] = stone; //new PENTE.Stone(loc, player.playerID);
+			PENTE.stones[PENTE.stones.length] = stone;
+			console.log(PENTE.stones);
+		},
+		placeStone: function(loc, player){
+			var locX = loc.x/PENTE.blockSize, 
+				locY = loc.y/PENTE.blockSize;
+
+			if (locX !== 0 && locY > 2 && locX !== PENTE.rowSizeX && locY !== PENTE.colSizeY) {
+				if (typeof PENTE.Grid[locX][locY] !== 'object'){
+					PENTE.update(loc, player);
+				}
+			else console.log("There is already a stone there.");
+			}
+			else console.log("Out of border.");
+		}
+};
+
+
+
+
+PENTE.Draw = {
+
+		drawGrid: function(width, height){
+
+			PENTE.ctx.clearRect(0, 0, PENTE.WIDTH, PENTE.HEIGHT);
+			PENTE.ctx2.clearRect(0, 0, PENTE.WIDTH, PENTE.HEIGHT);
+
+			PENTE.ctx.beginPath();
+
+			for (var x = 0; x < height; x += PENTE.blockSize){
+					PENTE.ctx.moveTo(x, PENTE.TOPOFFSET);
+					PENTE.ctx.lineTo(x, height);
+			}
+			for (var y = PENTE.TOPOFFSET; y < height; y += PENTE.blockSize){
+					PENTE.ctx.moveTo(0, y);
+					PENTE.ctx.lineTo(width, y);
+			}
+			PENTE.ctx.strokeStyle = "#ddd";
+			PENTE.ctx.stroke();
+
+			PENTE.ctx.beginPath();
+			PENTE.ctx.strokeStyle = "#0099CC";
+			PENTE.ctx.moveTo(PENTE.WIDTH/2, PENTE.TOPOFFSET);
+			PENTE.ctx.lineTo(PENTE.WIDTH/2, PENTE.HEIGHT);
+			PENTE.ctx.moveTo(0, PENTE.WIDTH/2 + PENTE.TOPOFFSET);
+			PENTE.ctx.lineTo(PENTE.HEIGHT,PENTE.WIDTH/2 + PENTE.TOPOFFSET);
+			PENTE.ctx.stroke();
+
+			
+
+
+			//PENTE.ctx.stroke();
+		},
+
+		drawStone: function(stone){
+
+			var gradient = PENTE.ctx2.createRadialGradient((stone.loc.x - 2), (stone.loc.y - 2), 5, stone.loc.x, stone.loc.y, (PENTE.blockSize / 2));
+			gradient.addColorStop(0, 'rgba(250,250,255,0.7)');
+			gradient.addColorStop(0.85, stone.color);
+			gradient.addColorStop(1, 'rgba(0,0,255,0)');
+
+			// draw the gradient (note that we dont bother drawing a circle, this is more efficient and less work!)
+			// but make sure it covers the entire gradient
+			PENTE.ctx2.fillStyle = gradient;
+
+			
+			PENTE.ctx2.beginPath();
+			PENTE.ctx2.arc(stone.loc.x, stone.loc.y, PENTE.blockSize, 0,2*Math.PI);
+			//PENTE.ctx.fillStyle = color;
+			PENTE.ctx2.fill();
+			PENTE.ctx2.lineWidth = 0.01;
+			PENTE.ctx2.stroke();
+			//PENTE.ctx.globalAlpha=4;
+		},
+
+		scoreboard: function() {
+			boardImage = new Image();
+			boardImage.src = "Images/scoreboard.png"; 
+			boardImage.onload = function(){
+				PENTE.ctx.drawImage(boardImage, 0, 0);
+			}
+		},
+
+		score: function(player){
+
+			var source = {
+				blue: [35, 50],
+				green: [125, 50],
+				red: [215, 50],
+				black: [305, 50],
+				orange: [395, 50],
+				pink: [485, 50]
+			};
+
+			PENTE.ctx2.clearRect(source[player.playerID][0]-30, source[player.playerID][1]-15, 70, 20);
+
+			PENTE.ctx2.font = "15px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("Score: " + player.score, source[player.playerID][0], source[player.playerID][1]);
+		},
+
+		playerWin: function(player){
+
+			function capitalize(s){
+    			return s[0].toUpperCase() + s.slice(1);
+    		};
+
+			PENTE.ctx2.clearRect(0, PENTE.TOPOFFSET, PENTE.WIDTH, PENTE.HEIGHT-PENTE.TOPOFFSET);
+			PENTE.ctx2.font = "50px Sans";
+			PENTE.ctx2.fillStyle = "black";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText(capitalize(player.playerID) + " Won!", PENTE.WIDTH/2, PENTE.HEIGHT/2);
+		},
+
+		gameMenu: function(){
+
+			PENTE.ctx2.clearRect(0, 0, PENTE.WIDTH, PENTE.HEIGHT);
+
+			PENTE.ctx.fillStyle = "#0066FF";
+			PENTE.ctx.fillRect(-0.5,0, PENTE.WIDTH, PENTE.HEIGHT);
+
+			PENTE.ctx2.font = "bold 50px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("Pente", PENTE.WIDTH/2, 70);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("2 player game", PENTE.WIDTH/2, 140);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("How to play", PENTE.WIDTH/2, 210);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("Quit", PENTE.WIDTH/2, 280);
+
+		}
+};
+
+PENTE.Points = {
+
+	checkPoints: function(location, player){
+
+		var stone = PENTE.Grid[location.x/PENTE.blockSize][location.y/PENTE.blockSize];
+		player.points = 0;
+		var locY = location.y/PENTE.blockSize;
+		var locX = location.x/PENTE.blockSize;
+		var index = 0;
+
+		var dirList = {
+			n: { x: [locX,locX,locX,locX,locX], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+			s: { x: [locX,locX,locX,locX,locX], y: [locY+1,locY+2,locY+3,locY+4,locY+5] },
+			e: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY,locY,locY,locY,locY] },
+			w: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY,locY,locY,locY,locY] },
+			ne: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+			sw: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY+1,locY+2,locY+3,locY+4,locY+5] },
+			nw: { x: [locX-1,locX-2,locX-3,locX-4,locX-5], y: [locY-1,locY-2,locY-3,locY-4,locY-5] },
+			se: { x: [locX+1,locX+2,locX+3,locX+4,locX+5], y: [locY+1,locY+2,locY+3,locY+4,locY+5] }
+		 };
+
+		checkFiveInArowDirs = function(dir, numBlocks, points){
+			for (index = 0; index <= numBlocks; index++){
+				if (dir.x[index] === 0 || dir.x[index] === PENTE.rowSizeX || dir.y[index] === 0 || dir.y[index] === PENTE.colSizeY) return points;
+				if (typeof PENTE.Grid[dir.x[index]][dir.y[index]] === 'object' && PENTE.Grid[dir.x[index]][dir.y[index]].color === player.playerID) points++;
+				else return points;
+			}
+		};
+
+		checkCaptureTwoDirs = function(dir, numBlocks){
+			var color;
+			for (index = 0; index <= numBlocks; index++){
+				if (dir.x[index] === 0 || dir.x[index] === PENTE.rowSizeX || dir.y[index] === 0 || dir.y[index] === PENTE.colSizeY) return false;
+				if (typeof PENTE.Grid[dir.x[index]][dir.y[index]] !== 'object') return false;
+			}
+
+			if (PENTE.Grid[dir.x[0]][dir.y[0]].color === PENTE.Grid[dir.x[1]][dir.y[1]].color && PENTE.Grid[dir.x[0]][dir.y[0]].color != player.playerID && PENTE.Grid[dir.x[2]][dir.y[2]].color === player.playerID){
+				var stonesArray= [PENTE.Grid[dir.x[0]][dir.y[0]], PENTE.Grid[dir.x[1]][dir.y[1]]];
+				PENTE.GameGrid.removeStones(stonesArray);
+				return true;
+			}
+		};
+
+		incPlayerScore = function (player){
+			player.score++;
+			PENTE.Draw.score(player);
+			console.log(player.playerID + " Captured two pieces!");
+			if (player.score > 4) playerWins(player);
+
+		};
+
+		playerWins = function(player){
+			PENTE.playerWon = true;
+			PENTE.Draw.playerWin(player);
+		}
+
+
+		if (checkCaptureTwoDirs(dirList.n, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.s, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.e, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.w, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.ne, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.nw, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.se, 2)) incPlayerScore(player);
+		else if (checkCaptureTwoDirs(dirList.sw, 2)) incPlayerScore(player);
+
+		player.points = checkFiveInArowDirs(dirList.n, 5, 0); 
+		if (player.points >= 4) {
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else if (checkFiveInArowDirs(dirList.s, 5, player.points) >=4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else player.points = 0;
+
+		player.points = checkFiveInArowDirs(dirList.e, 5, 0); 
+		if (player.points >= 4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else if (checkFiveInArowDirs(dirList.w, 5, player.points) >=4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else player.points = 0;
+
+		player.points = checkFiveInArowDirs(dirList.ne, 5, 0); 
+		if (player.points >= 4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else if (checkFiveInArowDirs(dirList.sw, 5, player.points) >=4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else player.points = 0;
+
+		player.points = checkFiveInArowDirs(dirList.nw, 5, 0); 
+		if (player.points >= 4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else if (checkFiveInArowDirs(dirList.se, 5, player.points) >=4){
+			console.log(player.playerID + " Got 5 in a row!");
+			playerWins(player);
+		}
+		else player.points = 0;
+	}
+};
+
+PENTE.Player = function(name, playerID, score) {
+	var colors = ["blue", "green", "red", "black", "orange", "pink"];
+	this.playerID = colors[playerID];
+	this.name = name;
+	this.score = score;
+};
+
+PENTE.Stone = function(loc, color, visible) {
+	this.loc = loc;
+	this.color = color;
+	this.visible = true;
+};
+
+
+PENTE.Location = function(x ,y) {
+	this.x = x;
+	this.y = y;
+};
+
+PENTE.menuInput = function(x, y){
+
+	if (x > 180 && x < 370 && y > 123 && y < 150){
+		PENTE.menu = false;
+		PENTE.main();
+	} 	
+
+};
+
+PENTE.Input = {
+
+    x: 0,
+    y: 0,
+    tapped: false,
+
+    set: function(data) {
+        this.x = (data.pageX - PENTE.offset.left) / PENTE.scale;
+        this.y = (data.pageY - PENTE.offset.top) / PENTE.scale;
+        this.tapped = true;
+        // rounds off to the closest 20.
+        var _x = Math.round(this.x / PENTE.blockSize) * PENTE.blockSize; 				
+		var _y = Math.round(this.y / PENTE.blockSize) * PENTE.blockSize;
+		// check round, if round > number of players, set to zero.
+		//if (PENTE.round === PENTE.numofPlayers) PENTE.round = 0;
+		PENTE.round = PENTE.round % PENTE.numofPlayers;		
+
+		mouseLocation = new PENTE.Location(_x, _y);
+		console.log(mouseLocation.x/PENTE.blockSize, mouseLocation.y/PENTE.blockSize);
+
+		//console.log(typeof gameGrid.Grid[loc.x/10][loc.y/10]);
+		if (!PENTE.playerWon && !PENTE.menu) PENTE.GameGrid.placeStone(mouseLocation, PENTE.players[PENTE.round]);
+		//check for menu selection.
+		if (PENTE.menu) PENTE.menuInput(this.x, this.y);
+
+    }
+
+};
+
+
+/*
+PENTE.init();
+} */
+
+window.addEventListener('load', PENTE.init, false);
+window.addEventListener('resize', PENTE.resize, false);
+
+</script>
+
+<script type="text/javascript">
+	
+
+</script>
+
+</body>
+</html>
