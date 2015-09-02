@@ -76,9 +76,7 @@ PENTE = {
         PENTE.canvas = document.getElementById("canvas");
 		//PENTE.canvas = document.getElementById("myCanvas");
 		PENTE.ctx = PENTE.canvas.getContext("2d");
-		// it's important to set this
-        // otherwise the browser will
-        // default to 320x200
+		// set width and height so browser doesn't default to 320x200
 		PENTE.canvas.width = PENTE.WIDTH;
         PENTE.canvas.height = PENTE.HEIGHT;
 		// The translate() method remaps the (0,0) position on the canvas.
@@ -88,27 +86,13 @@ PENTE = {
 		PENTE.canvas2 = document.getElementById("canvas2");
 		//PENTE.canvas = document.getElementById("myCanvas");
 		PENTE.ctx2= PENTE.canvas2.getContext("2d");
-		// it's important to set this
-        // otherwise the browser will
-        // default to 320x200
 		PENTE.canvas2.width = PENTE.WIDTH;
         PENTE.canvas2.height = PENTE.HEIGHT;
-		// The translate() method remaps the (0,0) position on the canvas.
 		PENTE.ctx2.translate(0.5, 0.5);
 	
 		//draw the game menu.
 		if (PENTE.menu){ 
 			PENTE.Draw.gameMenu();
-		}
-
-
-
-		for (var i = 0; i < PENTE.numofPlayers; i++) {
-			PENTE.players[i] = new PENTE.Player(PENTE.namesofPlayers[i], i, 0); // name, player, score;
-		}
-
-		for (i=0; i<PENTE.players.length; i++) {
-			console.log(PENTE.players[i]);
 		}
 
 		// listen for clicks
@@ -146,14 +130,6 @@ PENTE = {
         // resize the width in proportion
         // to the new height
         PENTE.currentWidth = PENTE.currentHeight * PENTE.RATIO;
-
-        // this will create some extra space on the
-        // page, allowing us to scroll pass
-        // the address bar, and thus hide it.
-        /*
-        if (PENTE.android || PENTE.ios) {
-            document.body.style.height = (window.innerHeight + 50) + 'px';
-        } */
 
         // set the new canvas style width & height
         // note: our canvas is still 320x480 but
@@ -198,6 +174,15 @@ PENTE = {
 
 	main: function(){
 
+		// sets name, player, score;
+		for (var i = 0; i < PENTE.numofPlayers; i++) {
+			PENTE.players[i] = new PENTE.Player(PENTE.namesofPlayers[i], i, 0); 
+		}
+
+		for (i=0; i<PENTE.players.length; i++) {
+			console.log(PENTE.players[i]);
+		}
+
 		PENTE.GameGrid.setGrid(PENTE.rowSizeX, PENTE.colSizeY);
 		PENTE.Draw.drawGrid(PENTE.WIDTH, PENTE.HEIGHT);
 		PENTE.Draw.scoreboard();
@@ -207,6 +192,7 @@ PENTE = {
 
 PENTE.GameGrid = {
 
+		// creates the gamegrid matrix that with rows and columns
 		setGrid: function(rows, columns){
 			var i, j;
 			PENTE.Grid = new Array(rows);
@@ -251,8 +237,6 @@ PENTE.GameGrid = {
 };
 
 
-
-
 PENTE.Draw = {
 
 		drawGrid: function(width, height){
@@ -294,14 +278,11 @@ PENTE.Draw = {
 			gradient.addColorStop(0.85, stone.color);
 			gradient.addColorStop(1, 'rgba(0,0,255,0)');
 
-			// draw the gradient (note that we dont bother drawing a circle, this is more efficient and less work!)
-			// but make sure it covers the entire gradient
 			PENTE.ctx2.fillStyle = gradient;
 
 			
 			PENTE.ctx2.beginPath();
 			PENTE.ctx2.arc(stone.loc.x, stone.loc.y, PENTE.blockSize, 0,2*Math.PI);
-			//PENTE.ctx.fillStyle = color;
 			PENTE.ctx2.fill();
 			PENTE.ctx2.lineWidth = 0.01;
 			PENTE.ctx2.stroke();
@@ -317,7 +298,7 @@ PENTE.Draw = {
 		},
 
 		score: function(player){
-
+			//scoreboard canvas locations
 			var source = {
 				blue: [35, 50],
 				green: [125, 50],
@@ -363,17 +344,32 @@ PENTE.Draw = {
 			PENTE.ctx2.font = "25px Sans";
 			PENTE.ctx2.fillStyle = "white";
 			PENTE.ctx2.textAlign = "center";
-			PENTE.ctx2.fillText("2 player game", PENTE.WIDTH/2, 140);
+			PENTE.ctx2.fillText("2 Player Game", PENTE.WIDTH/2, 140);
 
 			PENTE.ctx2.font = "25px Sans";
 			PENTE.ctx2.fillStyle = "white";
 			PENTE.ctx2.textAlign = "center";
-			PENTE.ctx2.fillText("How to play", PENTE.WIDTH/2, 210);
+			PENTE.ctx2.fillText("3 Player Game", PENTE.WIDTH/2, 210);
 
 			PENTE.ctx2.font = "25px Sans";
 			PENTE.ctx2.fillStyle = "white";
 			PENTE.ctx2.textAlign = "center";
-			PENTE.ctx2.fillText("Quit", PENTE.WIDTH/2, 280);
+			PENTE.ctx2.fillText("4 Player Game", PENTE.WIDTH/2, 280);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("5 Player Game", PENTE.WIDTH/2, 350);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("6 Player Game", PENTE.WIDTH/2, 420);
+
+			PENTE.ctx2.font = "25px Sans";
+			PENTE.ctx2.fillStyle = "white";
+			PENTE.ctx2.textAlign = "center";
+			PENTE.ctx2.fillText("How to Play", PENTE.WIDTH/2, 490);
 
 		}
 };
@@ -511,10 +507,35 @@ PENTE.Location = function(x ,y) {
 
 PENTE.menuInput = function(x, y){
 
-	if (x > 180 && x < 370 && y > 123 && y < 150){
+	if (x > 177 && x < 366 && y > 115 && y < 150){
 		PENTE.menu = false;
+		PENTE.numofPlayers = 2;
 		PENTE.main();
 	} 	
+	if (x > 177 && x < 366 && y > 191 && y < 216){
+		PENTE.menu = false;
+		PENTE.numofPlayers = 3;
+		PENTE.main();
+	} 	
+	if (x > 177 && x < 366 && y > 261 && y < 288){
+		PENTE.menu = false;
+		PENTE.numofPlayers = 4;
+		PENTE.main();
+	} 	
+	if (x > 177 && x < 366 && y > 332 && y < 352){
+		PENTE.menu = false;
+		PENTE.numofPlayers = 5;
+		PENTE.main();
+	} 	
+	if (x > 177 && x < 366 && y > 402 && y < 427){
+		PENTE.menu = false;
+		PENTE.numofPlayers = 6;
+		PENTE.main();
+	}
+	// How to play, load wikipedia ;)
+	if (x > 194 && x < 344 && y > 472 && y < 492){
+		window.open("https://en.wikipedia.org/wiki/Pente");
+	} 
 
 };
 
@@ -522,38 +543,39 @@ PENTE.Input = {
 
     x: 0,
     y: 0,
-    tapped: false,
 
     set: function(data) {
         this.x = (data.pageX - PENTE.offset.left) / PENTE.scale;
         this.y = (data.pageY - PENTE.offset.top) / PENTE.scale;
-        this.tapped = true;
         // rounds off to the closest 20.
         var _x = Math.round(this.x / PENTE.blockSize) * PENTE.blockSize; 				
 		var _y = Math.round(this.y / PENTE.blockSize) * PENTE.blockSize;
-		// check round, if round > number of players, set to zero.
-		//if (PENTE.round === PENTE.numofPlayers) PENTE.round = 0;
-		PENTE.round = PENTE.round % PENTE.numofPlayers;		
 
-		mouseLocation = new PENTE.Location(_x, _y);
-		console.log(mouseLocation.x/PENTE.blockSize, mouseLocation.y/PENTE.blockSize);
+		console.log("x: " + ~~this.x + " " + "y: " + ~~this.y);
 
-		//console.log(typeof gameGrid.Grid[loc.x/10][loc.y/10]);
-		if (!PENTE.playerWon && !PENTE.menu) PENTE.GameGrid.placeStone(mouseLocation, PENTE.players[PENTE.round]);
 		//check for menu selection.
 		if (PENTE.menu) PENTE.menuInput(this.x, this.y);
+		else {
+			// check round, if round > number of players, set to zero.
+			//if (PENTE.round === PENTE.numofPlayers) PENTE.round = 0;
+			PENTE.round = PENTE.round % PENTE.numofPlayers;		
+
+			mouseLocation = new PENTE.Location(_x, _y);
+			console.log(mouseLocation.x/PENTE.blockSize, mouseLocation.y/PENTE.blockSize);
+
+			//console.log(typeof gameGrid.Grid[loc.x/10][loc.y/10]);
+			if (!PENTE.playerWon) PENTE.GameGrid.placeStone(mouseLocation, PENTE.players[PENTE.round]);
+		}
 
     }
 
 };
 
 
-/*
-PENTE.init();
-} */
-
 window.addEventListener('load', PENTE.init, false);
 window.addEventListener('resize', PENTE.resize, false);
+
+//Created by holmberd 2015-08-01
 
 </script>
 
